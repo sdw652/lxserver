@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": ".",
+  "nodeVersion": 18,
+  "cloudFunctions": {
+    "nodejs": {
+      "externalNodeModules": true
+    }
+  }
+}
