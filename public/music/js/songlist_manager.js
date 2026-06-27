@@ -235,6 +235,23 @@ window.SongListManager = (function () {
             const res = await fetch(url);
             const data = await res.json();
 
+            // 静态部署模式下 info 为 null（后端返回空数据而非 503）
+            // 需要优雅降级，避免页面卡在加载状态
+            if (!data.info && page === 1) {
+                detailState.info = null;
+                detailState.list = [];
+                detailState.total = 0;
+                document.getElementById('sl-detail-name').innerText = '歌单加载失败';
+                document.getElementById('sl-detail-title').innerText = '歌单加载失败';
+                document.getElementById('sl-detail-subtitle').innerText = '静态部署模式下歌单详情不可用';
+                const descEl = document.getElementById('sl-detail-desc');
+                if (descEl) descEl.innerText = '此功能需要完整服务器运行时（音乐 SDK），静态部署模式下不可用。';
+                const statsEl = document.getElementById('sl-detail-stats');
+                if (statsEl) statsEl.innerHTML = '';
+                listContainer.innerHTML = '<div class="col-span-full py-20 text-center t-text-muted"><i class="fas fa-exclamation-circle text-4xl mb-4 opacity-30"></i><p>静态部署模式下歌单详情不可用</p></div>';
+                return;
+            }
+
             detailState.info = data.info;
 
             // Normalize IDs to ensure batch operations work correctly

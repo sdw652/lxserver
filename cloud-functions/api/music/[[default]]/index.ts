@@ -91,12 +91,23 @@ function jsonResponse(body: any, status = 200, extraHeaders: Record<string, stri
   })
 }
 
+// ===== 静态歌单排序选项（来源于各平台 musicSdk songList.sortList 常量）=====
+const SONG_LIST_SORT_LISTS: Record<string, { name: string; id: string | number }[]> = {
+  wy: [{ name: '最热', id: 'hot' }],
+  kg: [{ name: '推荐', id: '5' }, { name: '最热', id: '6' }, { name: '最新', id: '7' }],
+  tx: [{ name: '最热', id: 5 }, { name: '最新', id: 2 }],
+  kw: [{ name: '最新', id: 'new' }, { name: '最热', id: 'hot' }],
+  mg: [{ name: '推荐', id: '15127315' }],
+  bd: [{ name: '最热', id: '1' }, { name: '最新', id: '0' }],
+}
+
 // ===== Route dispatcher =====
 export async function onRequest(context: any) {
   const req = context.request
   const url = new URL(req.url)
   const pathname = url.pathname
   const method = req.method
+  const searchParams = url.searchParams
 
   // 从 env 读取配置
   const playerPassword = context.env.WEBPLAYER_PASSWORD || '123456'
@@ -147,8 +158,90 @@ export async function onRequest(context: any) {
     return jsonResponse({ success: true }, 200, { 'Set-Cookie': clearCookie })
   }
 
-  // ----- 以下端点需要完整 Node.js 运行时，静态部署模式下不可用 -----
-  // 返回明确的错误信息，让前端可以优雅降级或提示用户
+  // ===== 歌单/排行榜/歌手等端点：静态部署模式下无法调用 musicSdk =====
+  // 策略：返回前端期望格式的空数据（而非 503），让 UI 显示"暂无数据"而不崩溃。
+  // 对于 songList/tags，sortList 是各平台静态常量，可以硬编码返回。
+
+  // ----- GET /api/music/songList/tags -----
+  // 前端期望: { tags: [], hotTags: [], sortList: [...] }
+  // sortList 来源于各 SDK 的静态常量，可硬编码；tags/hotTags 需动态获取，返回空数组
+  if (pathname === '/api/music/songList/tags' && method === 'GET') {
+    const source = searchParams.get('source') || 'wy'
+    return jsonResponse({
+      tags: [],
+      hotTags: [],
+      sortList: SONG_LIST_SORT_LISTS[source] || SONG_LIST_SORT_LISTS['wy'],
+    })
+  }
+
+  // ----- GET /api/music/songList/list -----
+  // 前端期望: { list: [], total: 0, limit: 30 }
+  if (pathname === '/api/music/songList/list' && method === 'GET') {
+    return jsonResponse({ list: [], total: 0, limit: 30 })
+  }
+
+  // ----- GET /api/music/songList/detail -----
+  // 前端期望: { info: null, list: [], total: 0 }
+  if (pathname === '/api/music/songList/detail' && method === 'GET') {
+    return jsonResponse({ info: null, list: [], total: 0 })
+  }
+
+  // ----- GET /api/music/songList/search -----
+  // 前端期望: { list: [], total: 0, limit: 20 }
+  if (pathname === '/api/music/songList/search' && method === 'GET') {
+    return jsonResponse({ list: [], total: 0, limit: 20 })
+  }
+
+  // ----- GET /api/music/songList/userPlaylist -----
+  // 前端期望: { list: [], nickname: '', avatar: '' }
+  if (pathname === '/api/music/songList/userPlaylist' && method === 'GET') {
+    return jsonResponse({ list: [], nickname: '', avatar: '' })
+  }
+
+  // ----- GET /api/music/leaderboard/boards -----
+  // 前端期望: { list: [] }
+  if (pathname === '/api/music/leaderboard/boards' && method === 'GET') {
+    return jsonResponse({ list: [] })
+  }
+
+  // ----- GET /api/music/leaderboard/list -----
+  // 前端期望: { list: [], total: 0, limit: 100 }
+  if (pathname === '/api/music/leaderboard/list' && method === 'GET') {
+    return jsonResponse({ list: [], total: 0, limit: 100 })
+  }
+
+  // ----- GET /api/music/hotSearch -----
+  // 前端期望: { list: [], source: 'mg' }
+  if (pathname === '/api/music/hotSearch' && method === 'GET') {
+    const source = searchParams.get('source') || 'mg'
+    return jsonResponse({ list: [], source })
+  }
+
+  // ----- GET /api/music/artistDetail -----
+  // 前端期望: { info: null, list: [] }
+  if (pathname === '/api/music/artistDetail' && method === 'GET') {
+    return jsonResponse({ info: null, list: [] })
+  }
+
+  // ----- GET /api/music/artistAlbums -----
+  // 前端期望: { list: [], total: 0 }
+  if (pathname === '/api/music/artistAlbums' && method === 'GET') {
+    return jsonResponse({ list: [], total: 0 })
+  }
+
+  // ----- GET /api/music/artistSongs -----
+  // 前端期望: { list: [], total: 0 }
+  if (pathname === '/api/music/artistSongs' && method === 'GET') {
+    return jsonResponse({ list: [], total: 0 })
+  }
+
+  // ----- GET /api/music/albumSongs -----
+  // 前端期望: { list: [], total: 0 }
+  if (pathname === '/api/music/albumSongs' && method === 'GET') {
+    return jsonResponse({ list: [], total: 0 })
+  }
+
+  // ----- 以下端点确实无法提供有意义的数据，保持 503 -----
 
   // /api/music/url - 音乐 URL 解析（需要 musicSdk + VM 沙箱）
   if (pathname === '/api/music/url') {
@@ -186,63 +279,9 @@ export async function onRequest(context: any) {
     }, 503)
   }
 
-  // /api/music/hotSearch - 热搜（需要 musicSdk）
-  if (pathname === '/api/music/hotSearch') {
-    return jsonResponse({
-      error: '此端点需要完整服务器运行时（音乐 SDK），静态部署模式下不可用。',
-      code: 503,
-      endpoint: pathname,
-    }, 503)
-  }
-
   // /api/music/tipSearch - 搜索提示（需要 musicSdk）
   if (pathname === '/api/music/tipSearch') {
     return jsonResponse([], 200) // 前端期望数组，返回空数组避免报错
-  }
-
-  // /api/music/songList/* - 歌单相关（需要 musicSdk）
-  if (pathname.startsWith('/api/music/songList/')) {
-    return jsonResponse({
-      error: '此端点需要完整服务器运行时（音乐 SDK），静态部署模式下不可用。',
-      code: 503,
-      endpoint: pathname,
-    }, 503)
-  }
-
-  // /api/music/artistDetail - 歌手详情（需要 musicSdk）
-  if (pathname === '/api/music/artistDetail') {
-    return jsonResponse({
-      error: '此端点需要完整服务器运行时（音乐 SDK），静态部署模式下不可用。',
-      code: 503,
-      endpoint: pathname,
-    }, 503)
-  }
-
-  // /api/music/artistAlbums - 歌手专辑（需要 musicSdk）
-  if (pathname === '/api/music/artistAlbums') {
-    return jsonResponse({
-      error: '此端点需要完整服务器运行时（音乐 SDK），静态部署模式下不可用。',
-      code: 503,
-      endpoint: pathname,
-    }, 503)
-  }
-
-  // /api/music/artistSongs - 歌手歌曲（需要 musicSdk）
-  if (pathname === '/api/music/artistSongs') {
-    return jsonResponse({
-      error: '此端点需要完整服务器运行时（音乐 SDK），静态部署模式下不可用。',
-      code: 503,
-      endpoint: pathname,
-    }, 503)
-  }
-
-  // /api/music/albumSongs - 专辑歌曲（需要 musicSdk）
-  if (pathname === '/api/music/albumSongs') {
-    return jsonResponse({
-      error: '此端点需要完整服务器运行时（音乐 SDK），静态部署模式下不可用。',
-      code: 503,
-      endpoint: pathname,
-    }, 503)
   }
 
   // /api/music/progress - SSE 进度推送（需要服务器内存状态）
