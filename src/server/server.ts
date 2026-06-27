@@ -627,7 +627,7 @@ const serveStatic = (req: IncomingMessage, res: http.ServerResponse, filePath: s
   }
 }
 
-const handleStartServer = async (port = 9527, ip = '127.0.0.1') => await new Promise((resolve, reject) => {
+const handleStartServer = async (port = 9527, ip = '0.0.0.0') => await new Promise((resolve, reject) => {
   const httpServer = http.createServer(async (req, res) => {
     // CORS 跨域处理
     res.setHeader('Access-Control-Allow-Origin', '*')

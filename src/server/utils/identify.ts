@@ -10,7 +10,7 @@ import needle from 'needle'
  */
 
 // AcoustID 配置
-const API_KEY = 'Ti0HHLDf9O'
+const API_KEY = process.env.ACOUSTID_API_KEY || 'Ti0HHLDf9O'
 const API_URL = 'https://api.acoustid.org/v2/lookup'
 
 /**

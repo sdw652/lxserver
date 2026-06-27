@@ -28,6 +28,7 @@ export const ENV_PARAMS = [
   'SUBSONIC_ENABLE',
   'SUBSONIC_PATH',
   'SINGER_SOURCE_PRIORITY',
+  'ACOUSTID_API_KEY',
   'LX_USER_',
 ] as const
 

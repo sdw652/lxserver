@@ -4,7 +4,7 @@ const config: LX.Config = {
   'proxy.enabled': false, // 是否使用代理转发请求到本服务器
   'proxy.header': 'x-real-ip', // 代理转发的请求头 原始IP
   bindIP: '0.0.0.0', // 绑定IP
-  port: 9527, // 端口
+  port: 8080, // 端口
   'user.enablePath': true, // 是否开启用户路径
   'user.enableRoot': false, // 是否开启根路径
   'user.enablePublicRestriction': true, // 是否启用公开用户权限限制
