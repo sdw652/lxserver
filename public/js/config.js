@@ -1,7 +1,24 @@
-// 此文件中仅版本号为静态写死值
-// 其余配置由服务端在运行时动态注入 (环境变量 > config.js > defaultConfig.ts)
-// 服务端拦截 /js/config.js 请求, 读取此处版本号并合并服务端配置后返回
-window.CONFIG = {
+// 此文件为兜底默认值
+// 当 cloud-function 不可用时，前端仍可加载基础配置避免崩溃
+// 正常情况下由 cloud-function 动态注入完整配置
+window.CONFIG = window.CONFIG || {
     buildHash: 'c95106b',
     version: 'v1.9.4',
+    serverName: 'lxserver',
+    disableTelemetry: false,
+    'proxy.enabled': false,
+    'proxy.header': 'x-real-ip',
+    'user.enablePath': true,
+    'user.enableRoot': false,
+    'user.enablePublicRestriction': true,
+    'user.enableLoginCacheRestriction': false,
+    'user.enableCacheSizeLimit': false,
+    'user.cacheSizeLimit': 2000,
+    maxSnapshotNum: 10,
+    'list.addMusicLocationType': 'top',
+    'player.enableAuth': false,
+    port: 9527,
+    bindIP: '0.0.0.0',
+    'admin.path': '',
+    'player.path': '/music',
 };

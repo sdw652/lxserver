@@ -1,0 +1,14 @@
+{
+  "outputDirectory": "public",
+  "cloudFunctions": {
+    "nodejs": {
+      "runtime": "nodejs18"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/js/config.js",
+      "destination": "/config-js"
+    }
+  ]
+}
