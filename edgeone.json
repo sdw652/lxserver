@@ -2,5 +2,15 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "outputDirectory": "public",
-  "nodeVersion": "18"
+  "nodeVersion": "18",
+  "cloudFunctions": {
+    "login": {
+      "handler": "cloud-functions/login/index.js",
+      "path": "/api/login"
+    },
+    "user-login": {
+      "handler": "cloud-functions/user-login/index.js",
+      "path": "/api/user/login"
+    }
+  }
 }
