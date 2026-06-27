@@ -9,26 +9,6 @@
     {
       "source": "/js/config.js",
       "destination": "/config-js"
-    },
-    {
-      "source": "/api/login",
-      "destination": "/api-login"
-    },
-    {
-      "source": "/api/music/config",
-      "destination": "/api-music"
-    },
-    {
-      "source": "/api/music/auth",
-      "destination": "/api-music"
-    },
-    {
-      "source": "/api/music/auth/verify",
-      "destination": "/api-music"
-    },
-    {
-      "source": "/api/music/auth/logout",
-      "destination": "/api-music"
     }
   ]
 }
