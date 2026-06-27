@@ -38,6 +38,7 @@ class App {
         this.systemMemHistory = [];
         this.processMemHistory = [];
         this.monitorTimer = null;
+        this._backendUnavailableNotified = false;
         this.init();
         this.initVersion();
     }
@@ -1889,11 +1890,27 @@ class App {
         }
 
         if (!response.ok) {
+            // 对非认证类 API 的 404 响应，提示后端不可用（静态部署环境下后端服务器未运行）
+            if (response.status === 404 && !url.startsWith('/api/login') && !url.startsWith('/api/music')) {
+                this.notifyBackendUnavailable();
+            }
             const text = await response.text();
             throw new Error(text || 'Request failed');
         }
 
         return response.json();
+    }
+
+    /** 静态部署环境下后端服务器不可用的提示（只显示一次） */
+    notifyBackendUnavailable() {
+        if (this._backendUnavailableNotified) return;
+        this._backendUnavailableNotified = true;
+        const statusEl = document.getElementById('server-status');
+        if (statusEl) {
+            statusEl.textContent = '后端服务器未连接';
+            statusEl.style.color = '#f59e0b';
+        }
+        showInfo('当前为静态部署模式，后端服务器未运行。管理控制台仅可登录，数据操作需启动后端服务。');
     }
 
     formatUptime(seconds) {
